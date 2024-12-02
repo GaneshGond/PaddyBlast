@@ -2,11 +2,16 @@ from flask import Flask, render_template, request, jsonify
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.models import load_model
 import numpy as np
-from PIL import Image as PILImage
 import os
 
-# Load your model
-model = load_model('paddy_disease_diagnosis_model.h5')
+# Initialize Flask app
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Load model
+MODEL_PATH = os.path.join(os.path.dirname(__file__), 'paddy_disease_diagnosis_model.h5')
+model = load_model(MODEL_PATH)
 IMG_SIZE = (128, 128)
 CLASS_LABELS = ['Healthy', 'Mildly Diseased', 'Moderately Diseased', 'Severely Diseased']
 SOLUTIONS = {
@@ -16,17 +21,12 @@ SOLUTIONS = {
     'Severely Diseased': "Remove the infected leaves or plant to prevent spreading and apply intensive treatment."
 }
 
-app = Flask(__name__)
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
+# Predict image function
 def predict_image(img_path):
     img = image.load_img(img_path, target_size=IMG_SIZE)
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
 
-    # Predict
     predictions = model.predict(img_array)
     class_index = np.argmax(predictions[0])
     confidence = predictions[0][class_index]
