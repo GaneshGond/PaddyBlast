@@ -1,8 +1,0 @@
-# Folders
-uploads/
-__pycache__/
-
-# Files
-*.pyc
-.env
-paddy_disease_diagnosis_model.h5
